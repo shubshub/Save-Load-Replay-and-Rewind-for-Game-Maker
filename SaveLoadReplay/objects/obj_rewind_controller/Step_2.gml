@@ -21,15 +21,15 @@ if (keyboard_check(global.CONFIGS.rewind_key)) {
 if (!rewinding) {
 
 	var saveable = tag_get_asset_ids("saveable", asset_object);
+	//show_debug_message("Saveable: " + string(array_length(saveable)));
 	for (var i = 0; i < array_length(saveable); i++) {
 		with(saveable[i]) {
-			
 			DirtyChecker(game_state_id, self);	
 		}
 	}
 	
 	var rewind_entry = variable_clone(GetRewindData());
-	show_debug_message("Rewind Entry: " + string(rewind_entry));
+	//show_debug_message("Rewind Entry: " + string(rewind_entry));
 	array_insert(rewind_array, 0, rewind_entry);
 	if (array_length(rewind_array) > max_array_size) {
 		array_pop(rewind_array);	
@@ -41,13 +41,8 @@ if (!rewinding) {
 	if (array_length(rewind_array) > 0) {
 		for (var i = 0; i < rewind_speed; i++) {
 			var entry = array_shift(rewind_array);
-			show_debug_message("Entry: " + string(entry));
 			if (entry != undefined) {
-				if (array_length(rewind_array) != 0) {
-					SetFullGameState(entry, rewind_array[0]);
-				} else {
-					SetFullGameState(entry);
-				}
+				SetFullGameState(entry, rewinding);
 			} else {
 				rewinding = false;	
 				UpdateFullGameState();

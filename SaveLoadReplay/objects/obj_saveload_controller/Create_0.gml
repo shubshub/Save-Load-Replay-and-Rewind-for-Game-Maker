@@ -5,6 +5,7 @@ global.game_data = {
 	settings: {}
 };
 global.game_started = false;
+global.game_version = 0;
 started = false;
 camera_flash = false;
 alarm[0] = 2;

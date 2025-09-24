@@ -81,56 +81,47 @@ function find_instance_by_index(_indexid, _object_index) {
 	return _found;
 }
 
-function SetFullGameState(game_data, next_game_state = undefined) {
+function SetFullGameState(game_data, rewinding) {
 	
 	var _settings = {
 		gs: game_data.state,
 	};
 	
-	if (!is_undefined(next_game_state)) {
-		_settings.ngs = next_game_state.state;	
-	} else {
-		_settings.ngs = undefined;	
-	}
-	
 	foreach(game_data.state, _settings, function(inst, _settings) {
 		var alreadyExistingInstance = find_instance_by_index(inst.uuid, asset_get_index(inst.index));
-		var isInNextGS = true;
 		
-		if (!is_undefined(_settings.ngs)) {
-			var _ngs_asset = FindInGameState(inst.uuid);
+		if (inst.type == "STANDARD") {
+			if (instance_exists(inst.id)) {
 			
-			isInNextGS = (_ngs_asset != -1);
+				with(inst.id) {
+					x = inst.x;
+					y = inst.y;
+					active = inst.active;
+					ApplyStructToInstance(self, inst.otherData);
+				}
+			} else if (alreadyExistingInstance != noone) {
+				with(alreadyExistingInstance) {
+					x = inst.x;
+					y = inst.y;
+					active = inst.active;
+					ApplyStructToInstance(self, inst.otherData);
+				}
 			
-		}
-		
-		if (instance_exists(inst.id)) {
-			
-			with(inst.id) {
-				x = inst.x;
-				y = inst.y;
-				active = inst.active;
-				ApplyStructToInstance(self, inst.otherData);
+			} else {
+				if (inst.active && alreadyExistingInstance == noone) {
+					alreadyExistingInstance = shub_instance_create_depth(inst.x, inst.y, -5, asset_get_index(inst.index), inst.otherData, inst.uuid);	
+				}
 			}
-		} else if (alreadyExistingInstance != noone) {
-			with(alreadyExistingInstance) {
-				x = inst.x;
-				y = inst.y;
-				active = inst.active;
-				ApplyStructToInstance(self, inst.otherData);
-			}
-			
-		} else {
-			if (inst.active && alreadyExistingInstance == noone) {
+		} else if (inst.type == "CREATE") {
+			if (rewinding) {
+				with(alreadyExistingInstance) {
+					instance_destroy();	
+				}
+			} else {
 				alreadyExistingInstance = shub_instance_create_depth(inst.x, inst.y, -5, asset_get_index(inst.index), inst.otherData, inst.uuid);	
 			}
 		}
 		
-		if (!isInNextGS) {
-			with (alreadyExistingInstance) {
-				instance_destroy();
-			}
-		}
 		
 		
 	});
@@ -193,7 +184,6 @@ function UpdateFullGameState() {
 				inst.x = x;
 				inst.y = y;
 				inst.active = true;
-				inst.id = alreadyExistingInstance.id;
 				inst = UpdateSpecialParamters(inst);
 			}
 		} else {
@@ -422,9 +412,12 @@ function DestroyInGameState(gs_id, _instance) {
 }
 
 function DirtyChecker(gs_id, _instance) {
-	if (variable_global_exists("game_data") && gs_id >= 0 && gs_id < array_length(global.game_data.state)) {
+	if (variable_global_exists("game_data")) {
 		var game_state_entry = global.game_data.state[gs_id];
 		var old_entry = variable_clone(game_state_entry);
+		if (game_state_entry.type == "CREATE") {
+			game_state_entry.type = "STANDARD";	
+		}
 		var settings = {
 			gs_entry: game_state_entry,
 			otherData: game_state_entry.otherData,
@@ -433,13 +426,16 @@ function DirtyChecker(gs_id, _instance) {
 		}
 		
 		struct_foreach(game_state_entry, method({settings}, function(_name, _value) {
-			if (struct_exists(settings.instance, _name)) {
-				var _instance_entry = settings.instance[$ _name];
-				if(_instance_entry != settings.gs_entry[$ _name]) {
-					settings.gs_entry[$ _name] = _instance_entry;
-					settings.dirty = true;
+			if (_name != "type") {
+				if (struct_exists(settings.instance, _name)) {
+					var _instance_entry = settings.instance[$ _name];
+					if(_instance_entry != settings.gs_entry[$ _name]) {
+						settings.gs_entry[$ _name] = _instance_entry;
+						settings.dirty = true;
+					}
 				}
 			}
+			
 		}));
 		
 		
@@ -455,9 +451,11 @@ function DirtyChecker(gs_id, _instance) {
 			}
 		}));
 		
-		if (settings.dirty) {
+		if (settings.dirty || old_entry.type == "CREATE") {
 			SetRewindState(old_entry);	
 		}
+		
+		
 		
 		
 	}
@@ -478,11 +476,14 @@ function GetRewindData() {
 
 function SetRewindState(entry) {
 	var rewind_data = GetRewindData();
+	show_debug_message("Added to Rewind State: " + string(entry));
 	array_push(rewind_data.state, entry);
 }
 
-function AddToGameState(asset, uuid) {
+function AddToGameState(asset, uuid, type) {
+	
 	var game_state = GetGameState();
+	asset.game_state_id = array_length(game_state);
 	with(asset) {
 		var _objectState = {
 			includes: CreateInclusionList(self),
@@ -497,9 +498,10 @@ function AddToGameState(asset, uuid) {
 				ystart: ystart,
 				image_xscale: image_xscale,
 				image_yscale: image_yscale
-			}
+			},
+			type: type
 		}
-		
+		show_debug_message("Added to Game State: " + string(_objectState));
 		array_push(game_state, _objectState);
 	}
 	
@@ -530,7 +532,8 @@ function GameInitialize() {
 					ystart: ystart,
 					image_xscale: image_xscale,
 					image_yscale: image_yscale
-				}
+				},
+				type: "STANDARD"
 			};
 			
 			array_push(objs, _objectState);

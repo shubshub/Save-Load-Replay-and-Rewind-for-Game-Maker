@@ -26,10 +26,9 @@ function shub_instance_create_depth(_x, _y, _depth, _obj, _struct = undefined, u
 		_created = instance_create_depth(_x, _y, _depth, _obj);
 	}
 	
-	_created.game_state_id = instance_count;
 	_created.index_id = uuid;
 	
-	AddToGameState(_created, uuid);
+	AddToGameState(_created, uuid, "CREATE");
 }
 
 function generate_uuid() {
