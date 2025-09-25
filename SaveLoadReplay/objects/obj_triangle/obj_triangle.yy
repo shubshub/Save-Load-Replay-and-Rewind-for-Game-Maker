@@ -1,11 +1,12 @@
 {
   "$GMObject":"",
-  "%Name":"obj_white",
+  "%Name":"obj_triangle",
   "eventList":[
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":3,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":{"name":"obj_bullet","path":"objects/obj_bullet/obj_bullet.yy",},"eventNum":0,"eventType":4,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
   ],
   "managed":true,
-  "name":"obj_white",
+  "name":"obj_triangle",
   "overriddenProperties":[],
   "parent":{
     "name":"Objects",
@@ -33,8 +34,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_white",
-    "path":"sprites/spr_white/spr_white.yy",
+    "name":"spr_triangle",
+    "path":"sprites/spr_triangle/spr_triangle.yy",
   },
   "spriteMaskId":null,
   "tags":[

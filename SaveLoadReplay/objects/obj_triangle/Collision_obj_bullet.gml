@@ -1,0 +1,1 @@
+shub_instance_destroy(self);
