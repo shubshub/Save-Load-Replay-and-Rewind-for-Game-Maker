@@ -90,40 +90,48 @@ function SetFullGameState(game_data, rewinding) {
 	foreach(game_data.state, _settings, function(inst, _settings) {
 		var alreadyExistingInstance = find_instance_by_index(inst.uuid, asset_get_index(inst.index));
 		
-		if (inst.type == "STANDARD") {
-			if (instance_exists(inst.id)) {
+		switch(inst.type) {
+			case "STANDARD": {
+				if (instance_exists(inst.id)) {
 			
-				with(inst.id) {
-					x = inst.x;
-					y = inst.y;
-					active = inst.active;
-					ApplyStructToInstance(self, inst.otherData);
-				}
-			} else if (alreadyExistingInstance != noone) {
-				with(alreadyExistingInstance) {
-					x = inst.x;
-					y = inst.y;
-					active = inst.active;
-					ApplyStructToInstance(self, inst.otherData);
-				}
+					with(inst.id) {
+						x = inst.x;
+						y = inst.y;
+						active = inst.active;
+						ApplyStructToInstance(self, inst.otherData);
+					}
+				} else if (alreadyExistingInstance != noone) {
+					with(alreadyExistingInstance) {
+						x = inst.x;
+						y = inst.y;
+						active = inst.active;
+						ApplyStructToInstance(self, inst.otherData);
+					}
 			
-			} else {
-				if (inst.active && alreadyExistingInstance == noone) {
+				} else {
+					if (inst.active && alreadyExistingInstance == noone) {
+						alreadyExistingInstance = shub_instance_create_depth(inst.x, inst.y, -5, asset_get_index(inst.index), inst.otherData, inst.uuid);	
+					}
+				}
+				break;
+			}
+			case "CREATE": {
+				if (rewinding) {
+					shub_instance_destroy(alreadyExistingInstance);	
+				} else {
 					alreadyExistingInstance = shub_instance_create_depth(inst.x, inst.y, -5, asset_get_index(inst.index), inst.otherData, inst.uuid);	
 				}
+				break;	
 			}
-		} else if (inst.type == "CREATE") {
-			if (rewinding) {
-				with(alreadyExistingInstance) {
-					instance_destroy();	
+			case "DELETE": {
+				if (!rewinding) {
+					shub_instance_destroy(alreadyExistingInstance);	
+				} else {
+					alreadyExistingInstance = shub_instance_create_depth(inst.x, inst.y, -5, asset_get_index(inst.index), inst.otherData, inst.uuid);	
 				}
-			} else {
-				alreadyExistingInstance = shub_instance_create_depth(inst.x, inst.y, -5, asset_get_index(inst.index), inst.otherData, inst.uuid);	
+				break;	
 			}
 		}
-		
-		
-		
 	});
 	
 	SetGameData(game_data);
@@ -415,9 +423,10 @@ function DirtyChecker(gs_id, _instance) {
 	if (variable_global_exists("game_data")) {
 		var game_state_entry = global.game_data.state[gs_id];
 		var old_entry = variable_clone(game_state_entry);
-		if (game_state_entry.type == "CREATE") {
+		if (game_state_entry.type == "CREATE" || game_state_entry.type == "DELETE") {
 			game_state_entry.type = "STANDARD";	
 		}
+		
 		var settings = {
 			gs_entry: game_state_entry,
 			otherData: game_state_entry.otherData,
@@ -451,7 +460,7 @@ function DirtyChecker(gs_id, _instance) {
 			}
 		}));
 		
-		if (settings.dirty || old_entry.type == "CREATE") {
+		if (settings.dirty || old_entry.type != "STANDARD") {
 			SetRewindState(old_entry);	
 		}
 		
@@ -476,7 +485,7 @@ function GetRewindData() {
 
 function SetRewindState(entry) {
 	var rewind_data = GetRewindData();
-	show_debug_message("Added to Rewind State: " + string(entry));
+	//show_debug_message("Added to Rewind State: " + string(entry));
 	array_push(rewind_data.state, entry);
 }
 
@@ -531,7 +540,8 @@ function GameInitialize() {
 					xstart: xstart,
 					ystart: ystart,
 					image_xscale: image_xscale,
-					image_yscale: image_yscale
+					image_yscale: image_yscale,
+					image_angle: image_angle
 				},
 				type: "STANDARD"
 			};

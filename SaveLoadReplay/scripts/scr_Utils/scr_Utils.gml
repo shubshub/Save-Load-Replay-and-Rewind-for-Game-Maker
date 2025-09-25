@@ -29,6 +29,23 @@ function shub_instance_create_depth(_x, _y, _depth, _obj, _struct = undefined, u
 	_created.index_id = uuid;
 	
 	AddToGameState(_created, uuid, "CREATE");
+	
+	return _created;
+}
+
+function shub_instance_destroy(_inst) {
+	
+	var gameState = GetGameState();
+	var _stateEntry = FindInGameState(_inst.id);
+	
+	if (_stateEntry != -1) {
+		gameState[_stateEntry].type = "DELETE";
+		gameState[_stateEntry].active = false;
+	}
+	
+	with (_inst) {
+		instance_destroy();
+	}
 }
 
 function generate_uuid() {

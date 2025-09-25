@@ -39,7 +39,7 @@ if (!rewinding) {
 } else {
 	//Rewinding
 	if (array_length(rewind_array) > 0) {
-		for (var i = 0; i < rewind_speed; i++) {
+		for (var i = 0; i < global.CONFIGS.rewind_speed; i++) {
 			var entry = array_shift(rewind_array);
 			if (entry != undefined) {
 				SetFullGameState(entry, rewinding);
