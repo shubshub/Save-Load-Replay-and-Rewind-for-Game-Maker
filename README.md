@@ -2,6 +2,8 @@ Documentation - Very Simple to use
 
 Import the Package into your Game
 Drop the obj_rewind_controller and obj_saveload_controller into your First Game Room
+Drop the obj_load_buffer into your room to enable Loading the game when the Room Starts
+Otherwise you can called LoadGame2() and set global.game_started to true however you like
 
 THIS LIBRARY WILL LIKELY WORK BEST IF YOUR GAME FULLY TAKES PLACE INSIDE THE ROOM THAT THE CONTROLLERS ARE IN
 
