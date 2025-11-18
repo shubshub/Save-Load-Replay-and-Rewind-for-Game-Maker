@@ -7,7 +7,7 @@ function SaveGame() {
 	
 	buffer_write(_buffer, buffer_string, _string);
 	
-	buffer_save(_buffer, "save.txt");
+	buffer_save(_buffer, "saveload.txt");
 	
 	buffer_delete(_buffer);
 	
@@ -233,22 +233,22 @@ function FindUniqueIdInState(unique_id) {
 }
 
 function LoadGame2() {
-	if (file_exists("save.txt")) {
-		var _buffer = buffer_load("save.txt");
+	if (file_exists("saveload.txt")) {
+		var _buffer = buffer_load("saveload.txt");
 		var _json = buffer_read(_buffer, buffer_string);
 		
 		var game_data = json_parse(_json);
 		
-		if (global.game_version != game_data.settings.game_version) {
+		/*if (global.game_version != game_data.settings.game_version) {
 			return false;
-		}
+		}*/
 		
-		score = game_data.settings.collectables;
+		/*score = game_data.settings.collectables;
 		obj_inventory_controller.inventory._inventory_items = json_parse(game_data.settings.inventory);
 		obj_inventory_controller.treasures._inventory_items = json_parse(game_data.settings.treasures);
 		global.radioController._prevVolume = global.radioController._volume;
 		global.radioController._volume = real(game_data.settings.radioVolume);
-		obj_simonsays_controller.highest_wave = real(game_data.settings.highest_color_score);
+		obj_simonsays_controller.highest_wave = real(game_data.settings.highest_color_score);*/
 		
 		var cached_game_state = [];
 		
@@ -259,20 +259,16 @@ function LoadGame2() {
 		foreach(game_data.state, settings, function(entity, settings) {
 			if (entity.active) {
 				var asset = FindUniqueIdInState(entity.uuid);
-				var dont_creates = [obj_collectable_power_parent, obj_collectable_parent, obj_key_power_parent, obj_secret_power_parent];
+				var dont_creates = [];
 				asset.x = entity.x;
 				asset.y = entity.y;
-				if (asset.object_index == obj_crystal2) {
-					show_debug_message("Entity: " + string(entity));
-					show_debug_message("Crystal 2: X: " + string(entity.x) + " Y: " + string(entity.y));	
-				}
 				struct_foreach(entity.otherData, method({asset}, function(_name, _value)
 				{
 				    asset[$ _name] = _value;
 				}));
 			} else {
 				var asset = asset_get_index(entity.index);
-				with (asset) {
+				/*with (asset) {
 					if (object_is_ancestor(object_index, obj_collectable_parent) ||
 					object_is_ancestor(object_index, obj_item_parent) ||
 					object_is_ancestor(object_index, obj_treasure_parent)){
@@ -282,16 +278,16 @@ function LoadGame2() {
 							}
 						}
 					}	
-				}
+				}*/
 			}
 		});
 		
 		buffer_delete(_buffer);
 		
 		UpdateFullGameState();
-		with(obj_unlockable_controller) {
+		/*with(obj_unlockable_controller) {
 			grid_squares = InitializeUnlockables();	
-		}
+		}*/
 	}
 }
 
@@ -506,7 +502,8 @@ function AddToGameState(asset, uuid, type) {
 				xstart: xstart,
 				ystart: ystart,
 				image_xscale: image_xscale,
-				image_yscale: image_yscale
+				image_yscale: image_yscale,
+				image_angle: image_angle
 			},
 			type: type
 		}

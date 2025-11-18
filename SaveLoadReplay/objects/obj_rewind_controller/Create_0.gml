@@ -2,13 +2,13 @@
 // You can write your code in this editor
 global.CONFIGS = {
 	rewind_key: ord("R"),
-	rewind_speed: 2
+	rewind_speed: 2,
+	rewind_time_seconds: 60
 }
 
 
 rewind_array = [];
-maximum_time_in_seconds = 60;
-max_array_size = maximum_time_in_seconds * room_speed;
+max_array_size = global.CONFIGS.rewind_time_seconds * room_speed;
 rewinding = false;
 rewind_timer = 0;
 
